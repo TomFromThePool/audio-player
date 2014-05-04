@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Audio player test</title>
+        <link rel="stylesheet" href="css/player.css">
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+        <script src="js/player.js"></script>
+    </head>
+    <body>
+
+        <h1>Player demo</h1>
+        <div id="player">
+            
+        </div>
+        <script type="text/javascript">
+        $(document).ready(function(){
+   $("#player").audioPlayer({
+       autoPlay: false,
+       tracks: [
+           {
+                name: "Fisherman's Blues",
+                src:  "/mp3/07. The Waterboys - Fisherman's Blues.mp3"
+           },
+           {
+                name: "I Love to Boogie",
+                src: "/mp3/11 - I Love to Boogie.mp3"
+           }
+       ]
+   }); 
+});
+        </script>
+    </body>
+</html>

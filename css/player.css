@@ -1,0 +1,49 @@
+.audio-player{
+    background-color: #111;
+    border-radius: 5px;
+    padding: 5px;
+    color: #fff;
+    font-family: "Arial"
+}
+
+.audio-player-now-playing{
+    font-size: small;
+    text-align: center;
+    border-bottom: groove 2px #333;
+    height: 20px;
+}
+
+.audio-controls{
+}
+
+.audio-playlist-container{
+    
+}
+
+
+
+.audio-playlist-tools{
+    cursor: pointer;
+    border-top: groove 2px #333;
+    border-bottom: groove 2px #333;
+    height: 5px;
+}
+
+.audio-playlist{
+    
+}
+
+.audio-track{
+    cursor: pointer;
+    padding: 5px;
+    padding-left: 1em;
+}
+
+.audio-track.selected-track{
+    background-color: #444;
+}
+
+.audio-track:not(.selected-track):hover{
+    background-color: #222;
+    text-decoration: underline;
+}
