@@ -247,11 +247,11 @@
             var c = $("<div>").addClass("audio-playlist-container");
             var tools = $("<ul>").addClass("audio-playlist-tools").addClass("clearfix");//
             
-            var prev = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-prev").html("&laquo;");
+            var prev = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-prev").html("&laquo; Prev");
             prev.click(previousTrack);
             
             
-            var next = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-next").html("&raquo;");
+            var next = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-next").html("Next &raquo;");
             next.click(nextTrack);
             
             tools.append(prev).append(next);
