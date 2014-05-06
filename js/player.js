@@ -15,7 +15,7 @@
         };
         
         var createTrack = function(src, name){
-            return $("<div>").audioTrack({src: src, name: name});
+            return $("<li>").audioTrack({src: src, name: name});
         };
         
         var setupList = function(){
@@ -55,7 +55,7 @@
                 }
                 methods.setCurrentIndex(nextIdx);
             },
-            prev: function(){
+            previous: function(){
                 //Cyclical!
                 var prevIdx = settings.current - 1;
                 if(prevIdx < 0){
@@ -206,7 +206,7 @@
             var playlistContainer = getPlaylist();
             el.append(nowPlaying);
             el.append(controls);
-            el.append(playlist);
+            el.append(playlistContainer);
         };
         
         var getNowPlaying = function(){
@@ -230,6 +230,10 @@
             playlist.playlist("next");
         };
         
+        var previousTrack = function(){
+            playlist.playlist("previous");   
+        };
+        
         var togglePlaylist = function(){
             var pl = el.find(".audio-playlist");
           if(pl.is(":hidden")){
@@ -241,8 +245,18 @@
         
         var getPlaylist = function(){
             var c = $("<div>").addClass("audio-playlist-container");
-            var tools = $("<div>").addClass("audio-playlist-tools").click(togglePlaylist);
-            playlist = $("<div>").addClass("audio-playlist");
+            var tools = $("<ul>").addClass("audio-playlist-tools").addClass("clearfix");//
+            
+            var prev = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-prev").html("&laquo;");
+            prev.click(previousTrack);
+            
+            
+            var next = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-next").html("&raquo;");
+            next.click(nextTrack);
+            
+            tools.append(prev).append(next);
+            //.click(togglePlaylist);
+            playlist = $("<ul>").addClass("audio-playlist");
             
             playlist.playlist({ tracks: settings.tracks });
             
