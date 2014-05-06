@@ -53,7 +53,7 @@
                 if(nextIdx >= settings.tracks.length){
                   nextIdx = 0;   
                 }
-                return nextIdx;
+                methods.setCurrentIndex(nextIdx);
             },
             prev: function(){
                 //Cyclical!
@@ -61,7 +61,7 @@
                 if(prevIdx < 0){
                     prevIdx = settings.tracks.length - 1;
                 }
-                return prevIdx;
+                methods.setCurrentIndex(prevIdx);
             },
             setCurrent: function(src){
               methods.setCurrentIndex(getTrackIndex(src));
@@ -168,6 +168,8 @@
        var el = this;
         var tracks= [];
         var current = -1;
+        var player;
+        var playlist;
         var settings = el.data("settings");
         
         if(settings == undefined){
@@ -201,7 +203,7 @@
             el.empty();
             var nowPlaying = getNowPlaying();
             var controls = getControls();
-            var playlist = getPlaylist();
+            var playlistContainer = getPlaylist();
             el.append(nowPlaying);
             el.append(controls);
             el.append(playlist);
@@ -218,9 +220,14 @@
         
         var getControls = function(){
             var c = $("<div>").addClass("audio-controls");
-            var p = $("<audio>").attr("controls",true);
-            c.append(p);
+            player = $("<audio>").attr("controls",true);
+            player.on("ended", nextTrack);
+            c.append(player);
             return c;
+        };
+        
+        var nextTrack = function(){
+            playlist.playlist("next");
         };
         
         var togglePlaylist = function(){
@@ -235,11 +242,11 @@
         var getPlaylist = function(){
             var c = $("<div>").addClass("audio-playlist-container");
             var tools = $("<div>").addClass("audio-playlist-tools").click(togglePlaylist);
-            var l = $("<div>").addClass("audio-playlist");
+            playlist = $("<div>").addClass("audio-playlist");
             
-            l.playlist({ tracks: settings.tracks });
+            playlist.playlist({ tracks: settings.tracks });
             
-            return c.append(tools).append(l);
+            return c.append(tools).append(playlist);
         };
     
         
