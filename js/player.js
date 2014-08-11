@@ -1,7 +1,22 @@
 (function($){
+
+    /*
+      Playlist plugin - controls all playlist functionality and triggers
+      events based on user interaction
+
+      This plugin must be provided with a container element at the very least. If the container
+      is an empty element, then a default UI will be generated and used. Alternatively,
+      the following elements must be present within the container element in order to function:
+
+      .audio-playlist-tools - Container for the playlist tools
+        .audio-playlist-prev - Previous button
+        .audio-playlist-next - Next button
+      .audio-playlist - Container for the list of tracks itself. This should be a HTML list element.
+    */
     $.fn.playlist = function(method){
         var el = this;
         var settings = el.data("settings");
+        var playlist;
         
         if(settings == undefined){
             settings = $.extend({
@@ -17,11 +32,97 @@
         var createTrack = function(src, name){
             return $("<li>").audioTrack({src: src, name: name});
         };
+
+        /**
+          Check whether tools container exists - and if not, create it.
+
+          Tools container will not be created if settings contains BOTH prevButton and nextButton
+        **/
+        var getToolsContainer = function(){
+          var tools;
+          if((!settings.prevButton && !settings.nextButton) || (settings.prevButton == undefined || settings.nextButton == undefined || settings.prevButton == null || settings.nextButton == null)){
+            var tC = el.find(".audio-playlist-tools");
+            var tools;
+            if(tC.length == 0){
+              tools = $("<ul>").addClass("audio-playlist-tools").addClass("clearfix");
+              el.append(tools);
+            } else{
+              tools = $(tC.get(0));
+            }
+          }
+
+          getPrevButton(tools);
+          getNextButton(tools);
+        };
+
+        /**
+          Check whether next button exists already, and if not, create it.
+
+          This will be overridden if an element is passed into settings called 'nextButton'
+        **/
+        var getNextButton = function(tools){
+          var next;
+
+          if(tools != undefined && tools != null && (!settings.nextButton || settings.nextButton == undefined || settings.nextButton == null)){
+            var nB = tools.find(".audio-playlist-next");
+            if(nB.length == 0){
+              next = $("<li>").addClass("audio-playlist-next").html("Next &raquo;");
+              tools.append(next);
+            } else{
+              next = $(nB.get(0));
+            }
+          } else{
+            next = settings.nextButton
+          }
+          next.click(methods.next);
+          next.addClass("audio-playlist-tool");
+          return next;
+        };
+
+        /**
+          Check whether prev button exists, and if not, create it.
+          This will be overridden if an element is passed into settings called 'prevButton'
+        **/
+        var getPrevButton = function(tools){
+          var prev;
+          if(tools != undefined && tools != null && (!settings.prevButton || settings.prevButton == undefined || settings.prevButton == null)){ //Assume a jQuery object suffices
+            var pB = tools.find(".audio-playlist-prev");
+            if(pB.length == 0){
+              prev = $("<li>").addClass("audio-playlist-prev").html("&laquo; Prev");
+              tools.append(prev);
+            } else{
+              prev = $(pB.get(0));
+            }
+          } else{
+            prev = settings.prevButton;
+          }
+
+          prev.click(methods.previous);
+          prev.addClass("audio-playlist-tool");
+          return prev;
+        };
+
+        var getList = function(){
+          var list = $("<ol>").addClass("audio-playlist");
+          if(!settings.listContainer || settings.listContainer == undefined || settings.listContainer == null){
+            el.append(list);
+            settings.listContainer = el;
+            return list;
+          } else{
+            settings.listContainer.append(list);
+            return list;
+          }
+        };
+
+        var initUI = function(){
+            getToolsContainer();
+            playlist = getList();
+        };
         
         var setupList = function(){
            for(var i = 0; i < settings.tracks.length; i++){
              settings.tracks[i] = createTrack(settings.tracks[i].src, settings.tracks[i].name);
-               el.append(settings.tracks[i]);
+               playlist.append(settings.tracks[i]);
             }
         };
         
@@ -43,46 +144,47 @@
         var methods = {
           init: function(options){
               settings = $.extend(settings, options);
+              initUI();
               setupList();
-              el.on("track::selected", trackSelected);
               saveSettings();
+              settings.listContainer.on("track::selected", trackSelected);
           },
-            next: function(){
-                //Cyclical!
-                var nextIdx = settings.current + 1;
-                if(nextIdx >= settings.tracks.length){
-                  nextIdx = 0;   
-                }
-                methods.setCurrentIndex(nextIdx);
+          next: function(){
+              //Cyclical!
+              var nextIdx = settings.current + 1;
+              if(nextIdx >= settings.tracks.length){
+                nextIdx = 0;   
+              }
+              methods.setCurrentIndex(nextIdx);
+           },
+          previous: function(){
+              //Cyclical!
+              var prevIdx = settings.current - 1;
+              if(prevIdx < 0){
+                  prevIdx = settings.tracks.length - 1;
+              }
+              methods.setCurrentIndex(prevIdx);
             },
-            previous: function(){
-                //Cyclical!
-                var prevIdx = settings.current - 1;
-                if(prevIdx < 0){
-                    prevIdx = settings.tracks.length - 1;
-                }
-                methods.setCurrentIndex(prevIdx);
-            },
-            setCurrent: function(src){
+          setCurrent: function(src){
               methods.setCurrentIndex(getTrackIndex(src));
-            },
-            setCurrentIndex: function(idx){
-                if(idx >= 0 && idx < settings.tracks.length){
-                    settings.current = idx;
-                    var t = settings.tracks[settings.current];
-                    saveSettings();
-                    for(var i = 0; i < settings.tracks.length; i++){
-                        if(i != settings.current){
-                            settings.tracks[i].audioTrack("deselect");    
-                        } else{
-                            settings.tracks[i].audioTrack("select");   
-                        }
-                    }
-                    el.trigger("playlist::track-selected", [t.audioTrack("src"), t.audioTrack("name")]);
-                } else{
-                    throw "IDX must be a valid track index.";   
-                }
-            }
+          },
+          setCurrentIndex: function(idx){
+              if(idx >= 0 && idx < settings.tracks.length){
+                  settings.current = idx;
+                  var t = settings.tracks[settings.current];
+                  saveSettings();
+                  for(var i = 0; i < settings.tracks.length; i++){
+                      if(i != settings.current){
+                          settings.tracks[i].audioTrack("deselect");    
+                      } else{
+                          settings.tracks[i].audioTrack("select");   
+                      }
+                  }
+                  el.trigger("playlist::track-selected", [t.audioTrack("src"), t.audioTrack("name")]);
+              } else{
+                  throw "IDX must be a valid track index.";   
+              }
+          }
         };
         
         if ( methods[method] ) {
@@ -95,9 +197,7 @@
         } 
         
     };
-})(jQuery);
 
-(function($){
     $.fn.audioTrack = function(method){
       var el = this;
       var settings = el.data("settings");
@@ -161,9 +261,7 @@
             $.error( 'Method ' +  method + ' does not exist on jQuery.audioTrack' );
         } 
     };
-})(jQuery);
     
-    (function($){
     $.fn.audioPlayer = function(method){
        var el = this;
         var tracks= [];
@@ -204,6 +302,7 @@
             var nowPlaying = getNowPlaying();
             var controls = getControls();
             var playlistContainer = getPlaylist();
+            playlist = playlistContainer;
             el.append(nowPlaying);
             el.append(controls);
             el.append(playlistContainer);
@@ -211,7 +310,7 @@
         
         var getNowPlaying = function(){
           var n = $("<div>").addClass("audio-player-now-playing");
-        return n;
+          return n;
         };
         
         var setNowPlaying = function(trackName){
@@ -245,22 +344,9 @@
         
         var getPlaylist = function(){
             var c = $("<div>").addClass("audio-playlist-container");
-            var tools = $("<ul>").addClass("audio-playlist-tools").addClass("clearfix");//
-            
-            var prev = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-prev").html("&laquo; Prev");
-            prev.click(previousTrack);
-            
-            
-            var next = $("<li>").addClass("audio-playlist-tool").addClass("audio-playlist-next").html("Next &raquo;");
-            next.click(nextTrack);
-            
-            tools.append(prev).append(next);
-            //.click(togglePlaylist);
-            playlist = $("<ul>").addClass("audio-playlist");
-            
-            playlist.playlist({ tracks: settings.tracks });
-            
-            return c.append(tools).append(playlist);
+            //Call playlist on container
+            c.playlist({ tracks: settings.tracks, listContainer: settings.listContainer, nextButton: settings.nextButton, prevButton: settings.prevButton });
+            return c;
         };
     
         

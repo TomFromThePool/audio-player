@@ -26,13 +26,13 @@
     width: 100%;  
 }
 
-.audio-player ul{
+.audio-player ul, .audio-player ol{
     list-style-type: none;  
     padding: 5px;
     margin: 0;
 }
 
-.audio-player ul li{
+.audio-player ul li, .audio-player ol li{
     padding: 0;
     margin: 0;
 }

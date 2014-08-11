@@ -13,6 +13,9 @@
     <body>
 
         <h1>Player demo</h1>
+        <div class="my-next-button">NEXT!!!</div>
+        <div class="my-prev-button">PREV!!!</div>
+        <div class="my-list-container"></div>
         <div id="player">
             
         </div>
@@ -20,14 +23,17 @@
         $(document).ready(function(){
    $("#player").audioPlayer({
        autoPlay: false,
+       nextButton: $(".my-next-button"),
+       prevButton: $(".my-prev-button"),
+       listContainer: $(".my-list-container"),
        tracks: [
            {
                 name: "Fisherman's Blues",
-                src:  "/mp3/07. The Waterboys - Fisherman's Blues.mp3"
+                src:  "mp3/07. The Waterboys - Fisherman's Blues.mp3"
            },
            {
                 name: "I Love to Boogie",
-                src: "/mp3/11 - I Love to Boogie.mp3"
+                src: "mp3/11 - I Love to Boogie.mp3"
            }
        ]
    }); 
