@@ -9,15 +9,62 @@
         <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
         <script src="js/player.js"></script>
+        <style type="text/css">
+          body{
+            padding: 0;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+
+          .next-prev-controls{
+            top: 0;
+            height: 75px;
+            border-bottom: solid 1px #000;
+            width: 100%;
+            font-size: large;
+          }
+
+          .next-prev-controls .my-next-button{
+            float: right;
+            margin: 10px;
+          }
+
+          .next-prev-controls .my-prev-button{
+            float: left;
+            margin: 10px;
+          }
+
+          .sidebar{
+            width: 25%;
+            float: left;
+          }
+
+          .sidebar .my-list-container{
+            width: 100%;
+          }
+
+          .main{
+          float: left;
+          padding: 10px;
+          }
+        </style>
     </head>
     <body>
+        <div class="header">
+          <div class="next-prev-controls">
+            <div class="my-prev-button">Previous</div>
+            <div class="my-next-button">Next</div>
+          </div>
+        </div>
+        <div class="container">
+          <div class="sidebar">
+            <div class="my-list-container"></div>
+          </div>
+          <div class="main">
+            <div id="player">
 
-        <h1>Player demo</h1>
-        <div class="my-next-button">NEXT!!!</div>
-        <div class="my-prev-button">PREV!!!</div>
-        <div class="my-list-container"></div>
-        <div id="player">
-            
+            </div>
+          </div>
         </div>
         <script type="text/javascript">
         $(document).ready(function(){
@@ -36,7 +83,7 @@
                 src: "mp3/11 - I Love to Boogie.mp3"
            }
        ]
-   }); 
+   });
 });
         </script>
     </body>
