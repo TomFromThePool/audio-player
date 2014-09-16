@@ -17,18 +17,18 @@
         var el = this;
         var settings = el.data("settings");
         var playlist;
-        
+
         if(settings == undefined){
             settings = $.extend({
                current: -1,
-               tracks: [] 
+               tracks: []
             }, {});
         }
-        
+
         var saveSettings = function(){
             el.data("settings", settings);
         };
-        
+
         var createTrack = function(src, name){
             return $("<li>").audioTrack({src: src, name: name});
         };
@@ -102,6 +102,10 @@
           return prev;
         };
 
+        /**
+          Check whether playlist exists, and if not, create it.
+          This will be overridden if an element is passed into settings called 'listContainer'
+        **/
         var getList = function(){
           var list = $("<ol>").addClass("audio-playlist");
           if(!settings.listContainer || settings.listContainer == undefined || settings.listContainer == null){
@@ -114,18 +118,28 @@
           }
         };
 
+        /**
+          Initialise the user interface and set the playlist var
+        **/
         var initUI = function(){
+            el.addClass("audio-playlist-container");
             getToolsContainer();
             playlist = getList();
         };
-        
+
+        /**
+          Set up the playlist based on the tracks in the settings object
+        **/
         var setupList = function(){
            for(var i = 0; i < settings.tracks.length; i++){
              settings.tracks[i] = createTrack(settings.tracks[i].src, settings.tracks[i].name);
                playlist.append(settings.tracks[i]);
             }
         };
-        
+
+        /**
+          Retrieve the index of the track with the given src
+        **/
         var getTrackIndex = function(src){
             var idx = -1;
             for(var i = 0; i < settings.tracks.length; i++){
@@ -136,11 +150,14 @@
             }
             return idx;
         };
-        
+
+        /**
+          Handle the track selected event
+        **/
         var trackSelected = function(event, src, name){
             methods.setCurrent(src);
         };
-        
+
         var methods = {
           init: function(options){
               settings = $.extend(settings, options);
@@ -149,14 +166,22 @@
               saveSettings();
               settings.listContainer.on("track::selected", trackSelected);
           },
+          /**
+            Start playing the next track in the playlist.
+            This function is cyclical - if the next index is out of bounds, the index is reset to 0.
+          **/
           next: function(){
               //Cyclical!
               var nextIdx = settings.current + 1;
               if(nextIdx >= settings.tracks.length){
-                nextIdx = 0;   
+                nextIdx = 0;
               }
               methods.setCurrentIndex(nextIdx);
            },
+          /**
+            Start playing the previous track in the playlist.
+            This function is cyclical - if the next index is out of bounds, the index is reset to settings.tracks.length - 1
+          **/
           previous: function(){
               //Cyclical!
               var prevIdx = settings.current - 1;
@@ -164,10 +189,16 @@
                   prevIdx = settings.tracks.length - 1;
               }
               methods.setCurrentIndex(prevIdx);
-            },
+          },
+          /**
+            Set the current track. The track must already exist - you cannot add a new track via this method.
+          **/
           setCurrent: function(src){
               methods.setCurrentIndex(getTrackIndex(src));
           },
+          /**
+            Set the current track index.
+          **/
           setCurrentIndex: function(idx){
               if(idx >= 0 && idx < settings.tracks.length){
                   settings.current = idx;
@@ -175,18 +206,18 @@
                   saveSettings();
                   for(var i = 0; i < settings.tracks.length; i++){
                       if(i != settings.current){
-                          settings.tracks[i].audioTrack("deselect");    
+                          settings.tracks[i].audioTrack("deselect");
                       } else{
-                          settings.tracks[i].audioTrack("select");   
+                          settings.tracks[i].audioTrack("select");
                       }
                   }
                   el.trigger("playlist::track-selected", [t.audioTrack("src"), t.audioTrack("name")]);
               } else{
-                  throw "IDX must be a valid track index.";   
+                  throw "IDX must be a valid track index.";
               }
           }
         };
-        
+
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
@@ -194,21 +225,24 @@
             return methods.init.apply( this, arguments );
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.playlist' );
-        } 
-        
+        }
+
     };
 
+    /**
+      jQuery plugin representing a single audio track.
+    **/
     $.fn.audioTrack = function(method){
       var el = this;
       var settings = el.data("settings");
-        
+
         if(settings == undefined){
             $.extend({
                 name: undefined,
                 src: undefined
             }, {});
         }
-        
+
       var fileNameWithExtension = /[^\\/]+\.[^\\/]+$/;
       var fileNameNoExtension = /([^\/]+)(?=\.\w+$)/;
       var setTrack = function(src){
@@ -217,11 +251,11 @@
           }
           el.text(settings.name);
       };
-        
+
         var saveSettings = function(){
-            el.data("settings", settings);    
+            el.data("settings", settings);
         };
-        
+
       var methods = {
           init: function(options){
               el.addClass("audio-track");
@@ -229,7 +263,7 @@
               setTrack(settings.src, settings.name);
               saveSettings();
               el.click(function(){
-                 el.trigger("track::selected", [settings.src, settings.name]); 
+                 el.trigger("track::selected", [settings.src, settings.name]);
               });
               return el;
           },
@@ -244,14 +278,15 @@
           name: function(){
             return settings.name;
           },
+          /** May end up moving the select and deselect functions out of here **/
           select: function(){
-            el.addClass("selected-track");      
+            el.addClass("selected-track");
           },
           deselect: function(){
-           el.removeClass("selected-track");   
+           el.removeClass("selected-track");
           }
         };
-        
+
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
@@ -259,9 +294,12 @@
             return methods.init.apply( this, arguments );
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.audioTrack' );
-        } 
+        }
     };
-    
+
+    /**
+      jQuery plugin for the player itself
+    **/
     $.fn.audioPlayer = function(method){
        var el = this;
         var tracks= [];
@@ -269,110 +307,124 @@
         var player;
         var playlist;
         var settings = el.data("settings");
-        
+
         if(settings == undefined){
             settings = $.extend({
                 autoPlay: false,
-                tracks: []
+                tracks: [],
+                controls: true,
+                listContainer: null
             }, {});
         }
-        
+
         var saveSettings = function(){
             el.data("settings", settings);
         };
-        
+
         var play = function(src, name){
             setTrack(src);
             setNowPlaying(name);
             getPlayer().get(0).play();
         };
-        
+
         var getPlayer = function(){
-            return el.find("audio");  
+            return el.find("audio");
         };
-        
+
         var setTrack = function(src){
             var p = getPlayer();
             p.get(0).pause();
             p.attr("src", src);
         };
-        
+
         var setBody = function(){
             el.empty();
             var nowPlaying = getNowPlaying();
+            el.append(nowPlaying);
+
             var controls = getControls();
+            el.append(controls);
+
             var playlistContainer = getPlaylist();
             playlist = playlistContainer;
-            el.append(nowPlaying);
-            el.append(controls);
-            el.append(playlistContainer);
+            playlist.on("playlist::track-selected", trackSelected);
+            //el.append(playlistContainer);
         };
-        
+
         var getNowPlaying = function(){
           var n = $("<div>").addClass("audio-player-now-playing");
           return n;
         };
-        
+
         var setNowPlaying = function(trackName){
             el.find(".audio-player-now-playing").text(trackName);
         };
-        
+
         var getControls = function(){
             var c = $("<div>").addClass("audio-controls");
-            player = $("<audio>").attr("controls",true);
+            player = $("<audio>");
+
+            if(settings.controls){
+              player.attr("controls", true);
+            }
+
             player.on("ended", nextTrack);
             c.append(player);
             return c;
         };
-        
+
         var nextTrack = function(){
             playlist.playlist("next");
         };
-        
+
         var previousTrack = function(){
-            playlist.playlist("previous");   
+            playlist.playlist("previous");
         };
-        
+
         var togglePlaylist = function(){
-            var pl = el.find(".audio-playlist");
-          if(pl.is(":hidden")){
-                pl.show(100);
-             } else{
-                 pl.hide(100);
-             }
+          if(playlist.is(":hidden")){
+            playlist.show(100);
+          } else{
+              playlist.hide(100);
+          }
         };
-        
+
         var getPlaylist = function(){
-            var c = $("<div>").addClass("audio-playlist-container");
-            //Call playlist on container
-            c.playlist({ tracks: settings.tracks, listContainer: settings.listContainer, nextButton: settings.nextButton, prevButton: settings.prevButton });
-            return c;
+          var c;
+          if(settings.listContainer && settings.listContainer != undefined && settings.listContainer != null && settings.listContainer.length > 0){
+            c = settings.listContainer;
+          } else{
+            c = $("<div>");
+            el.append(c);
+          }
+          //Call playlist on container
+          c.playlist({ tracks: settings.tracks, listContainer: settings.listContainer, nextButton: settings.nextButton, prevButton: settings.prevButton });
+          return c;
         };
-    
-        
+
+
         var createTrack = function(src, name){
             return $("<div>").audioTrack({src: src, name: name});
         };
-        
+
         var trackSelected = function(event, src, name){
-            play(src, name);  
+            play(src, name);
         };
-        
+
         var methods = {
           init: function(options){
               el.addClass("audio-player");
-              el.on("playlist::track-selected", trackSelected);
               settings = $.extend(settings, options);
-              saveSettings();          
+              saveSettings();
               setBody();
-            
+
               if(settings.autoPlay){
                 play(0);
               }
               return el;
           }
         };
-        
+
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
@@ -380,6 +432,6 @@
             return methods.init.apply( this, arguments );
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.audioPlayer' );
-        } 
+        }
     };
 })(jQuery);
