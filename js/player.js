@@ -29,8 +29,8 @@
             el.data("settings", settings);
         };
 
-        var createTrack = function(src, name){
-            return $("<li>").audioTrack({src: src, name: name});
+        var createTrack = function(src, name, artist){
+            return $("<li>").audioTrack({src: src, name: name, artist: artist});
         };
 
         /**
@@ -132,7 +132,7 @@
         **/
         var setupList = function(){
            for(var i = 0; i < settings.tracks.length; i++){
-             settings.tracks[i] = createTrack(settings.tracks[i].src, settings.tracks[i].name);
+             settings.tracks[i] = createTrack(settings.tracks[i].src, settings.tracks[i].name, settings.tracks[i].artist);
                playlist.append(settings.tracks[i]);
             }
         };
@@ -211,7 +211,7 @@
                           settings.tracks[i].audioTrack("select");
                       }
                   }
-                  el.trigger("playlist::track-selected", [t.audioTrack("src"), t.audioTrack("name")]);
+                  el.trigger("playlist::track-selected", [t.audioTrack("src"), t.audioTrack("name"), t.audioTrack("artist")]);
               } else{
                   throw "IDX must be a valid track index.";
               }
@@ -239,6 +239,7 @@
         if(settings == undefined){
             $.extend({
                 name: undefined,
+                artist: undefined,
                 src: undefined
             }, {});
         }
@@ -263,7 +264,7 @@
               setTrack(settings.src, settings.name);
               saveSettings();
               el.click(function(){
-                 el.trigger("track::selected", [settings.src, settings.name]);
+                 el.trigger("track::selected", [settings.src, settings.name, settings.artist]);
               });
               return el;
           },
@@ -277,6 +278,9 @@
           },
           name: function(){
             return settings.name;
+          },
+          artist: function(){
+            return settings.artist;
           },
           /** May end up moving the select and deselect functions out of here **/
           select: function(){
@@ -313,7 +317,9 @@
                 autoPlay: false,
                 tracks: [],
                 controls: true,
-                listContainer: null
+                listContainer: null,
+                nextButton: null,
+                prevButton: null
             }, {});
         }
 
@@ -321,9 +327,9 @@
             el.data("settings", settings);
         };
 
-        var play = function(src, name){
+        var play = function(src, name, artist){
             setTrack(src);
-            setNowPlaying(name);
+            setNowPlaying(artist, name);
             getPlayer().get(0).play();
         };
 
@@ -356,8 +362,13 @@
           return n;
         };
 
-        var setNowPlaying = function(trackName){
-            el.find(".audio-player-now-playing").text(trackName);
+        var setNowPlaying = function(artist, trackName){
+          var p = el.find(".audio-player-now-playing");
+          if(artist){
+            p.text(artist + " - " + trackName);
+          } else{
+            p.text(trackName);
+          }
         };
 
         var getControls = function(){
@@ -403,12 +414,12 @@
         };
 
 
-        var createTrack = function(src, name){
-            return $("<div>").audioTrack({src: src, name: name});
+        var createTrack = function(src, name, artist){
+            return $("<div>").audioTrack({src: src, name: name, artist: artist});
         };
 
-        var trackSelected = function(event, src, name){
-            play(src, name);
+        var trackSelected = function(event, src, name, artist){
+            play(src, name, artist);
         };
 
         var methods = {
