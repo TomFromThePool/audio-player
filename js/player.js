@@ -215,6 +215,9 @@
               } else{
                   throw "IDX must be a valid track index.";
               }
+          },
+          getCurrentIndex: function(){
+            return settings.current;
           }
         };
 
@@ -302,6 +305,327 @@
     };
 
     /**
+      Plugin to handle a play / pause button. By default, this presents a single button which flips between states.
+    **/
+    $.fn.playPauseButton = function(method){
+      var el = this;
+      var settings = el.data("settings");
+
+      if(settings == undefined){
+          settings = $.extend({
+            player: null,
+            playText: "&#9658;",
+            pauseText: "||"
+          });
+      }
+
+      var togglePlayback = function(){
+        if(settings.playerRaw.paused){
+          settings.playerRaw.play();
+          el.trigger("playpause:play");
+        } else{
+          settings.playerRaw.pause();
+          el.trigger("playpause:pause");
+        }
+        setupButton();
+
+        //Fire toggle event
+        el.trigger("playpause:toggled");
+      };
+
+      var setupButton = function(){
+        if(settings.button == undefined || settings.button == null){
+            //Add button
+            settings.button = $("<span>").addClass("toggle-button");
+            settings.player.on("play", setupButton);
+            settings.player.on("pause", setupButton);
+            el.append(settings.button);
+        }
+
+        if(settings.playerRaw.paused){
+          settings.button.removeClass("playing");
+          settings.button.addClass("paused");
+          settings.button.html(settings.playText);
+        } else{
+          settings.button.removeClass("paused");
+          settings.button.addClass("playing");
+          settings.button.html(settings.pauseText);
+        }
+      };
+
+      var methods = {
+        init: function(options){
+          if(options.player == undefined || options.player == null){
+            throw "You must specify the HTML5 audio player element.";
+          } else{
+            el.addClass("audio-player-playback-toggle");
+            settings = $.extend(settings, options);
+            settings.playerRaw = settings.player.get(0);
+            setupButton();
+
+            el.click(togglePlayback);
+          }
+          return el;
+        }
+      };
+
+      if ( methods[method] ) {
+          return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+      } else if ( typeof method === 'object' || ! method ) {
+          // Default to "init"
+          return methods.init.apply( this, arguments );
+      } else {
+          $.error( 'Method ' +  method + ' does not exist on jQuery.playPauseButton' );
+      }
+    };
+
+    /**
+      See http://stackoverflow.com/questions/6312993/javascript-seconds-to-time-string-with-format-hhmmss
+    **/
+    String.prototype.toHHMMSS = function () {
+      var sec_num = parseInt(this, 10); // don't forget the second param
+      var hours   = Math.floor(sec_num / 3600);
+      var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+      var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+      if (hours   < 10) {hours   = "0"+hours;}
+      if (minutes < 10) {minutes = "0"+minutes;}
+      if (seconds < 10) {seconds = "0"+seconds;}
+      var time    = hours+':'+minutes+':'+seconds;
+      return time;
+    };
+
+    /**
+      Plugin to handle a volume controller
+    **/
+    $.fn.audioVolume = function(method){
+      var el = this;
+      var settings = el.data("settings");
+      var updater;
+      var performUpdate = false;
+
+      var setVolumeDisplay = function(){
+        settings.volumeBar.css("width", (settings.playerRaw.volume / 1 * 100) + "%");
+      };
+
+      var setupBody = function(){
+        if(settings.volumeBar == undefined || settings.volumeBar == null){
+          settings.volumeBar = $("<div>").addClass("audio-player-volume-bar");
+          el.append(settings.volumeBar);
+        }
+        setVolumeDisplay();
+      };
+
+      var setVolumeFromMouse = function(e){
+        var posX = e.offsetX;
+        var pc = posX / el.width();
+
+        setVolume(pc);
+        settings.setVolumeDisplay();
+      };
+
+      var setVolume = function(volume){
+        settings.playerRaw.volume = volume;
+      };
+
+      var methods = {
+        init: function(options){
+          if(options.player == undefined || options.player == null){
+            throw "You must specify the HTML5 audio player element.";
+          } else{
+            el.addClass("audio-player-volume");
+            settings = $.extend(settings, options);
+            settings.playerRaw = settings.player.get(0);
+            el.click(setVolumeFromMouse);
+            setupBody();
+          }
+          return el;
+        }
+      };
+
+      if(settings == undefined){
+        settings = $.extend({
+          player: null,
+          setVolumeDisplay: setVolumeDisplay
+        }, {});
+      }
+
+      if ( methods[method] ) {
+          return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+      } else if ( typeof method === 'object' || ! method ) {
+          // Default to "init"
+          return methods.init.apply( this, arguments );
+      } else {
+          $.error( 'Method ' +  method + ' does not exist on jQuery.audioVolume' );
+      }
+
+    };
+
+    /**
+      Plugin to handle the playback timer / counter
+    **/
+    $.fn.audioCounter = function(method){
+      var el = this;
+      var updater;
+      var performUpdate = false;
+      var counter;
+
+      var settings = el.data("settings");
+
+      var updateProgress = function(force){
+        if(force || performUpdate){
+          setBody();
+        }
+      };
+
+      var onPlay = function(){
+        performUpdate = true;
+        updateProgress();
+      };
+
+      var onPause = function(){
+        performUpdate = false;
+      };
+
+      var setBody = function(){
+        if(counter == undefined || counter == null){
+          counter = $("<span>").addClass("audio-counter-time");
+          el.append(counter);
+        }
+        counter.text(settings.playerRaw.currentTime.toString().toHHMMSS());
+      };
+
+      var methods = {
+        init: function(options){
+          if(options.player == undefined || options.player == null){
+            throw "You must specify the HTML5 audio player element.";
+          } else{
+            el.addClass("audio-counter");
+            settings = $.extend(settings, options);
+            settings.playerRaw = settings.player.get(0);
+            settings.player.on("play", onPlay);
+            settings.player.on("pause", onPause);
+            updater = setInterval(settings.updateProgress, 100);
+            performUpdate = true;
+
+            el.data("settings", settings);
+          }
+          return el;
+        },
+        updateProgress: function(){
+            settings.updateProgress();
+        }
+      };
+
+      if(settings == undefined){
+        settings = $.extend({
+          player: null,
+          updateProgress: updateProgress
+        }, {});
+      }
+
+      if ( methods[method] ) {
+          return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+      } else if ( typeof method === 'object' || ! method ) {
+          // Default to "init"
+          return methods.init.apply( this, arguments );
+      } else {
+          $.error( 'Method ' +  method + ' does not exist on jQuery.audioCounter' );
+      }
+    };
+
+    /** Simple plugin to handle the audio scrubber **/
+    $.fn.audioScrubber = function(method){
+      var el = this;
+
+      var settings = el.data("settings");
+
+      var updater = null;
+      var updateInterval = 5; //Scrubber update interval in seconds
+      var performUpdate = false;
+
+      /** Calculate progress and update scrubber **/
+      var updateProgress = function(force){
+        if(force || performUpdate){
+          if(settings.progressBar == null){
+            settings.progressBar = $("<div>").addClass("audio-scrubber-progress").css("width", "0%");
+            settings.counter = $("<div>").audioCounter({ player: settings.player });
+            el.append(settings.progressBar);
+            el.append(settings.counter);
+          }
+
+          var max = settings.playerRaw.duration;
+          var cur = settings.playerRaw.currentTime;
+          var pcComplete = (cur / max) * 100;
+
+          settings.progressBar.css("width", pcComplete + "%");
+        }
+      };
+
+      var setPositionFromMouse = function(e){
+        var posX = e.offsetX;
+        var pc = posX / el.width();
+        seekTo(Math.floor(pc * settings.playerRaw.duration));
+        settings.updateProgress(true);
+      };
+
+      var seekTo = function(time){
+        var preseekTime = settings.playerRaw.currentTime;
+        settings.playerRaw.currentTime = time;
+        el.trigger("audioscrubber:seek", [preseekTime, settings.playerRaw.currentTime]); //Send the time pre-seek, and post-seek
+      };
+
+      var onPlay = function(){
+        performUpdate = true;
+        updateProgress();
+      };
+
+      var onPause = function(){
+        performUpdate = false;
+      };
+
+      var methods = {
+        init: function(options){
+          if(options.player == undefined || options.player == null){
+            throw "You must specify the HTML5 audio player element.";
+          } else{
+            el.addClass("audio-scrubber");
+            settings = $.extend(settings, options);
+            settings.playerRaw = settings.player.get(0);
+            settings.player.on("play", onPlay);
+            settings.player.on("pause", onPause);
+            updater = setInterval(updateProgress, 1000);
+            performUpdate = true;
+
+            el.click(setPositionFromMouse);
+            el.data("settings", settings);
+          }
+          return el;
+        },
+        updateProgress: function(){
+            settings.updateProgress();
+        }
+      };
+
+      if(settings == undefined){
+        settings = $.extend({
+          player: null,
+          progressBar: null,
+          updateProgress: updateProgress
+        }, {});
+      }
+
+      if ( methods[method] ) {
+          return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+      } else if ( typeof method === 'object' || ! method ) {
+          // Default to "init"
+          return methods.init.apply( this, arguments );
+      } else {
+          $.error( 'Method ' +  method + ' does not exist on jQuery.audioScrubber' );
+      }
+    };
+
+    /**
       jQuery plugin for the player itself
     **/
     $.fn.audioPlayer = function(method){
@@ -311,12 +635,15 @@
         var player;
         var playlist;
         var settings = el.data("settings");
+        var playPause;
+        var scrubber;
+        var volume;
 
         if(settings == undefined){
             settings = $.extend({
                 autoPlay: false,
                 tracks: [],
-                controls: true,
+                controls: false,
                 listContainer: null,
                 nextButton: null,
                 prevButton: null
@@ -371,12 +698,46 @@
           }
         };
 
+        var playClicked = function(){
+          if(playlist){
+            if(playlist.playlist("getCurrentIndex") < 0){
+              playlist.playlist("next");
+            }
+          }
+        };
+
+        var pauseClicked = function(){
+
+        };
+
+        var playPauseToggled = function(){
+
+        };
+
+        var seek = function(){
+
+        };
+
         var getControls = function(){
-            var c = $("<div>").addClass("audio-controls");
+            var c = $("<div>").addClass("audio-controls clearfix");
             player = $("<audio>");
 
             if(settings.controls){
               player.attr("controls", true);
+            } else{
+              //Generate custom controls
+              playPause = $("<div>").playPauseButton({player: player});
+              c.append(playPause);
+              playPause.on("playpause:play", playClicked);
+              playPause.on("playpause:pause", pauseClicked);
+              playPause.on("playpause:toggle", playPauseToggled);
+
+              scrubber = $("<div>").audioScrubber({ player: player});
+              scrubber.on("audioscrubber:seek", seek);
+              c.append(scrubber);
+
+              volume = $("<div>").audioVolume({player: player});
+              c.append(volume);
             }
 
             player.on("ended", nextTrack);

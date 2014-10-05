@@ -21,13 +21,13 @@
     width: 450px;
 }
 
-.audio-player audio { 
+.audio-player audio {
     display: block;
-    width: 100%;  
+    width: 100%;
 }
 
 .audio-player ul, .audio-player ol{
-    list-style-type: none;  
+    list-style-type: none;
     padding: 5px;
     margin: 0;
 }
@@ -45,10 +45,11 @@
 }
 
 .audio-controls{
+	padding: 5px;
 }
 
 .audio-playlist-container{
-    
+
 }
 
 
@@ -72,7 +73,7 @@
 }
 
 .audio-playlist{
-    
+
 }
 
 .audio-track{
@@ -88,4 +89,75 @@
 .audio-track:not(.selected-track):hover{
     background-color: #222;
     text-decoration: underline;
+}
+
+.audio-scrubber{
+	float: left;
+	width: 70%;
+	margin-left: 10px;
+	margin-right: auto;
+	height: 15px;
+	padding: 0;
+	background-color: #222;
+	vertical-align: middle;
+	cursor: pointer;
+	position: relative;
+}
+
+.audio-counter{
+	position: absolute;
+	top: 0;
+	font-size: x-small;
+	background-color: #222;
+	opacity: 0.8;
+	color: #fff;
+	height: 100%;
+}
+
+.audio-counter-time{
+	vertical-align: middle;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.audio-scrubber-progress{
+	height: 100%;
+	width: 0%;
+	background-color: #fff;
+}
+
+.audio-player-playback-toggle{
+	float: left;
+	border: solid 1px #222;
+	border-radius: 5px;
+	width: 15px;
+	padding-left: 5px;
+	padding-right: 5px;
+	font-size: small;
+	color: #fff;
+	margin: 0;
+	background-color: #111;
+	text-align: center;
+	cursor: pointer;
+}
+
+.audio-player-playback-toggle .toggle-button{
+	vertical-align: text-top;
+}
+
+.toggle-button.playing{
+}
+
+.audio-player-volume{
+	float: right;
+	width: 50px;
+	height: 15px;
+	border: solid 1px #444;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.audio-player-volume-bar{
+	background-color: #444;
+	height: 100%;
 }
