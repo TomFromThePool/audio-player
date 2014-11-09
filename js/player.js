@@ -314,8 +314,8 @@
       if(settings == undefined){
           settings = $.extend({
             player: null,
-            playText: "&#9658;",
-            pauseText: "||"
+            playText: "",
+            pauseText: ""
           });
       }
 
@@ -336,19 +336,19 @@
       var setupButton = function(){
         if(settings.button == undefined || settings.button == null){
             //Add button
-            settings.button = $("<span>").addClass("toggle-button");
+            settings.button = $("<span>").addClass("toggle-button fa");
             settings.player.on("play", setupButton);
             settings.player.on("pause", setupButton);
             el.append(settings.button);
         }
 
         if(settings.playerRaw.paused){
-          settings.button.removeClass("playing");
-          settings.button.addClass("paused");
+          settings.button.removeClass("playing").removeClass("fa-pause");
+          settings.button.addClass("paused").addClass("fa-play");
           settings.button.html(settings.playText);
         } else{
-          settings.button.removeClass("paused");
-          settings.button.addClass("playing");
+          settings.button.removeClass("paused").removeClass("fa-play");
+          settings.button.addClass("playing").addClass("fa-pause");
           settings.button.html(settings.pauseText);
         }
       };

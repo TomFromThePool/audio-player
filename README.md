@@ -80,6 +80,7 @@ You can then style those elements however you like.
 
 ##What's next?
 Things I'd like to add (in no particular order):
+
 1. Ability to add / remove / swap tracks on the fly.
 2. Ability to specify artwork for tracks (although simplicity is preferable to feature overload)
 3. Support for custom player controls (play / pause / scrubber / timer etc)
@@ -100,3 +101,6 @@ You can pass the following options into the plugin (defaults shown):
 
       prevButton: null //The jQuery wrapped element to use as the Play button
     });
+
+##Attributions
+Icons: [Font Awesome by Dave Gandy](http://fontawesome.io).
