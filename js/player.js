@@ -410,15 +410,19 @@
 
       var setupBody = function(){
         if(settings.volumeBar == undefined || settings.volumeBar == null){
+          el.append($("<span>").addClass("fa fa-volume-up"));
+          settings.volumeBarContainer = $("<div>").addClass("audio-player-volume-container");
           settings.volumeBar = $("<div>").addClass("audio-player-volume-bar");
-          el.append(settings.volumeBar);
+          settings.volumeBarContainer.click(setVolumeFromMouse);
+          settings.volumeBarContainer.append(settings.volumeBar);
+          el.append(settings.volumeBarContainer);
         }
         setVolumeDisplay();
       };
 
       var setVolumeFromMouse = function(e){
         var posX = e.offsetX;
-        var pc = posX / el.width();
+        var pc = posX / settings.volumeBarContainer.width();
 
         setVolume(pc);
         settings.setVolumeDisplay();
@@ -436,7 +440,6 @@
             el.addClass("audio-player-volume");
             settings = $.extend(settings, options);
             settings.playerRaw = settings.player.get(0);
-            el.click(setVolumeFromMouse);
             setupBody();
           }
           return el;

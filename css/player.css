@@ -128,8 +128,6 @@
 
 .audio-player-playback-toggle{
 	float: left;
-	border: solid 1px #222;
-	border-radius: 5px;
 	width: 15px;
 	padding-left: 5px;
 	padding-right: 5px;
@@ -150,14 +148,28 @@
 
 .audio-player-volume{
 	float: right;
-	width: 50px;
+	width: 75px;
 	height: 15px;
+}
+
+.audio-player-volume span{
+	width: 25%;
+	height: 100%;
+}
+
+.audio-player-volume-container{
+	float: right;
+	clear: left;
+	position: relative;
+	width: 70%;
+	height: 100%;
 	border: solid 1px #444;
 	border-radius: 5px;
 	cursor: pointer;
 }
 
 .audio-player-volume-bar{
+	position: absolute;
 	background-color: #444;
 	height: 100%;
 }
